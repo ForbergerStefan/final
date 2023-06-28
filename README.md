@@ -1,4 +1,2 @@
-# Angular 11 + Spring Boot + ec2 with RDS
+# Angular 11 + Spring Boot + DynamoDB + Lambda
 
-
-![postgreSQL_diagram](postgreSQL_diagram.png)

@@ -1,0 +1,304 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Sample SAM Template for ToDo
+
+  '
+Globals:
+  Function:
+    Timeout: 20
+Parameters:
+  DynamoDBEndpointUrl:
+    Description: DynamoDB Endpoint URL
+    Type: String
+    Default: dynamodb.eu-central-1.amazonaws.com
+  AwsRegion:
+    Description: AWS Region
+    Type: String
+    Default: eu-central-1
+Resources:
+  ApiGatewayApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: Prod
+  GetTutorialsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetTutorialsFunction
+      Handler: com.bezkoder.App::handleRequest
+      Runtime: java11
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+          REGION:
+            Ref: AwsRegion
+          DYNAMODB_ENDPOINT:
+            Ref: DynamoDBEndpointUrl
+          DYNAMODB_TABLE:
+            Ref: TutorialsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TutorialsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/tutorials
+            Method: get
+            ApiId:
+              Ref: ApiGatewayApi
+    Metadata:
+      SamResourceId: GetTutorialsFunction
+  GetTutorialByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: GetTutorialByIdFunction
+      Handler: com.bezkoder.App::handleRequest
+      Runtime: java11
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+          REGION:
+            Ref: AwsRegion
+          DYNAMODB_ENDPOINT:
+            Ref: DynamoDBEndpointUrl
+          DYNAMODB_TABLE:
+            Ref: TutorialsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TutorialsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/tutorials/{id}
+            Method: get
+            ApiId:
+              Ref: ApiGatewayApi
+    Metadata:
+      SamResourceId: GetTutorialByIdFunction
+  PostTutorialFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PostTutorialFunction
+      Handler: com.bezkoder.App::handleRequest
+      Runtime: java11
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+          REGION:
+            Ref: AwsRegion
+          DYNAMODB_ENDPOINT:
+            Ref: DynamoDBEndpointUrl
+          DYNAMODB_TABLE:
+            Ref: TutorialsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TutorialsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/tutorials
+            Method: post
+            ApiId:
+              Ref: ApiGatewayApi
+    Metadata:
+      SamResourceId: PostTutorialFunction
+  PutTutorialByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: PutTutorialByIdFunction
+      Handler: com.bezkoder.App::handleRequest
+      Runtime: java11
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+          REGION:
+            Ref: AwsRegion
+          DYNAMODB_ENDPOINT:
+            Ref: DynamoDBEndpointUrl
+          DYNAMODB_TABLE:
+            Ref: TutorialsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TutorialsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/tutorials/{id}
+            Method: put
+            ApiId:
+              Ref: ApiGatewayApi
+    Metadata:
+      SamResourceId: PutTutorialByIdFunction
+  DeleteTutorialByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: DeleteTutorialByIdFunction
+      Handler: com.bezkoder.App::handleRequest
+      Runtime: java11
+      Architectures:
+      - x86_64
+      MemorySize: 512
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+          REGION:
+            Ref: AwsRegion
+          DYNAMODB_ENDPOINT:
+            Ref: DynamoDBEndpointUrl
+          DYNAMODB_TABLE:
+            Ref: TutorialsTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: TutorialsTable
+      Events:
+        Api:
+          Type: HttpApi
+          Properties:
+            Path: /api/tutorials/{id}
+            Method: delete
+            ApiId:
+              Ref: ApiGatewayApi
+    Metadata:
+      SamResourceId: DeleteTutorialByIdFunction
+  TutorialsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+  CloudfrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        HttpVersion: http2
+        DefaultRootObject: index.html
+        Origins:
+        - Id: S3Origin
+          DomainName:
+            Fn::GetAtt:
+            - S3Bucket
+            - RegionalDomainName
+          S3OriginConfig:
+            OriginAccessIdentity: ''
+          OriginAccessControlId:
+            Fn::GetAtt:
+            - CloudFrontOriginAccessControl
+            - Id
+        - Id: LambdaOrigin
+          DomainName:
+            Fn::Sub: ${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com
+          OriginPath: /Prod
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only
+        Enabled: 'true'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          ViewerProtocolPolicy: redirect-to-https
+          SmoothStreaming: 'false'
+          Compress: 'true'
+          ForwardedValues:
+            QueryString: 'false'
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+        CacheBehaviors:
+        - TargetOriginId: LambdaOrigin
+          PathPattern: /api/*
+          AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          - PUT
+          - POST
+          - PATCH
+          - DELETE
+          ViewerProtocolPolicy: redirect-to-https
+          SmoothStreaming: 'false'
+          Compress: 'true'
+          ForwardedValues:
+            QueryString: 'false'
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+  CloudFrontOriginAccessControl:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name:
+          Fn::GetAtt:
+          - S3Bucket
+          - RegionalDomainName
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3Bucket
+      PolicyDocument:
+        Statement:
+        - Action: s3:GetObject
+          Effect: Allow
+          Resource:
+            Fn::Sub: ${S3Bucket.Arn}/*
+          Principal:
+            Service: cloudfront.amazonaws.com
+          Condition:
+            StringEquals:
+              AWS:SourceArn:
+                Fn::Sub: arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudfrontDistribution}
+Outputs:
+  ClientS3Bucket:
+    Description: S3 bucket for client site publishing
+    Value:
+      Ref: S3Bucket
+  DynamoDbTable:
+    Description: DynamoDB Table where tasks are stored
+    Value:
+      Ref: TutorialsTable
+  TutorialsApi:
+    Description: API Gateway endpoint URL for Get Tutorials function
+    Value:
+      Fn::Sub: https://${ApiGatewayApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/tutorials
+  CloudFrontUrl:
+    Description: CloudFront URL
+    Value:
+      Fn::Sub: https://${CloudfrontDistribution.DomainName}
