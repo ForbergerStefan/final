@@ -31,10 +31,6 @@ export class TutorialService {
     return this.http.delete(`${environment.endpoint}/${id}`);
   }
 
-  deleteAll(): Observable<any> {
-    return this.http.delete(environment.endpoint);
-  }
-
   findByTitle(title: any): Observable<Tutorial[]> {
     return this.http.get<Tutorial[]>(`${environment.endpoint}?title=${title}`);
   }

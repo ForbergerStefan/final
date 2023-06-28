@@ -7,6 +7,7 @@
       </div>
     </div>
   </div>
+
   <div class="col-md-6">
     <h4>Todo List</h4>
     <ul class="list-group">
@@ -20,6 +21,7 @@
       </li>
     </ul>
   </div>
+
   <div class="col-md-6">
     <div *ngIf="currentTutorial">
       <h4>Action</h4>
@@ -35,7 +37,7 @@
         {{ currentTutorial.published ? 'Published' : 'Pending' }}
       </div>
 
-      <a routerLink="/tutorials/{{ currentTutorial.id }}"> <span class="badge bg-primary">Edit</span> </a>
+      <a class="badge bg-warning" routerLink="/tutorials/{{ currentTutorial.id }}"> Edit </a>
     </div>
   </div>
 </div>
