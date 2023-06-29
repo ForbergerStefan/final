@@ -13,7 +13,6 @@
         />
       </div>
 
-
       <div class="form-group">
         <label for="description">Description</label>
         <input
@@ -23,13 +22,10 @@
           [(ngModel)]="tutorial.description"
           name="description"
         />
-        <!--
-        test to hide button
       </div>
 
       <button (click)="saveTutorial()" class="btn btn-success">Submit</button>
     </div>
-    -->
 
     <div *ngIf="submitted">
       <h4>Tutorial was submitted successfully!</h4>
